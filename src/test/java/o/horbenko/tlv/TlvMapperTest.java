@@ -18,6 +18,9 @@ public class TlvMapperTest {
         @TlvAttribute(tag = 4)
         private List<String> stringList;
 
+        @TlvAttribute(tag = 5)
+        private byte[] byteArray;
+
         public FlatObject integer(int i) {
             integer = i;
             return this;
@@ -55,6 +58,22 @@ public class TlvMapperTest {
         public FlatObject shortPrimitive(short i) {
             this.shortPrimitive = i;
             return this;
+        }
+
+        public List<String> getStringList() {
+            return stringList;
+        }
+
+        public void setStringList(List<String> stringList) {
+            this.stringList = stringList;
+        }
+
+        public byte[] getByteArray() {
+            return byteArray;
+        }
+
+        public void setByteArray(byte[] byteArray) {
+            this.byteArray = byteArray;
         }
     }
 

@@ -23,7 +23,6 @@ public class TlvMapper {
                     TlvAttribute anno = field.getAnnotation(TlvAttribute.class);
                     field.setAccessible(true);
                     Class<?> fieldType = field.getType();
-
                     Object fieldValue = field.get(toMap);
                     System.out.println("\ttype=" + fieldType + "\tvalue=" + fieldValue + "\tanno=" + anno);
 
