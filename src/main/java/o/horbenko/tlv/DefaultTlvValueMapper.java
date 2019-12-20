@@ -3,29 +3,41 @@ package o.horbenko.tlv;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-public class PrimitivesMapper {
+public class DefaultTlvValueMapper implements TlvValueMapper {
 
+    private static final DefaultTlvValueMapper mapperInstance = new DefaultTlvValueMapper();
 
-    public static <T>
-    byte[] toBytes(T t, Class<T> inType) {
+    public static DefaultTlvValueMapper getInstance() {
+        return mapperInstance;
+    }
+
+    @Override
+    public <T>
+    byte[] toBytes(Object t, Class<?> inType) {
 
         if (inType.isAssignableFrom(String.class))
             return toBytes((String) t);
 
-        if (inType.isAssignableFrom(Short.class))
+        if (t instanceof Short)
             return toBytes((short) t);
 
-        if (inType.isAssignableFrom(Integer.class))
+//        if (inType.isAssignableFrom(Integer.class))
+        if (t instanceof Integer)
             return toBytes((Integer) t);
 
         if (inType.isAssignableFrom(Long.TYPE))
             return toBytes((long) t);
 
+        if (inType == byte[].class) {
+            return (byte[]) t;
+        }
+
         throw new UnsupportedOperationException();
     }
 
-    public static <T>
-    T mapToObject(byte[] from, Class<T> mapInto) {
+    @Override
+    public <T>
+    T toObject(byte[] from, Class<T> mapInto) {
 
         if (mapInto.isAssignableFrom(String.class))
             return (T) toString(from);
@@ -44,11 +56,11 @@ public class PrimitivesMapper {
 
 
     private static byte[] toBytes(short val) {
-        return ByteBuffer.allocateDirect(Short.BYTES).putShort(val).array();
+        return ByteBuffer.allocate(Short.BYTES).putShort(val).array();
     }
 
     private static byte[] toBytes(int val) {
-        return ByteBuffer.allocateDirect(Integer.BYTES).putInt(val).array();
+        return ByteBuffer.allocate(Integer.BYTES).putInt(val).array();
     }
 
     private static byte[] toBytes(long val) {

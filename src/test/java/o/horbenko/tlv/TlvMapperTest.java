@@ -1,7 +1,9 @@
 package o.horbenko.tlv;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TlvMapperTest {
@@ -9,22 +11,23 @@ public class TlvMapperTest {
     static class FlatObject {
 
         @TlvAttribute(tag = 1)
-        private Integer integer;
+        private Integer integer = 1;
         @TlvAttribute(tag = 2)
-        private String string;
+        private String string = "2";
         @TlvAttribute(tag = 3)
-        private short shortPrimitive;
+        private Short shortPrimitive = 3;
 
-        @TlvAttribute(tag = 4)
-        private List<String> stringList;
+//        @TlvAttribute(tag = 4)
+        private List<String> stringList = new ArrayList<>();
 
         @TlvAttribute(tag = 5)
-        private byte[] byteArray;
+        private byte[] byteArray= new byte[]{0x71, 0x72, 0x73};
 
         public FlatObject integer(int i) {
             integer = i;
             return this;
         }
+
         public FlatObject string(String i) {
             string = i;
             return this;
@@ -85,7 +88,9 @@ public class TlvMapperTest {
                 .shortPrimitive((short) 111)
                 .string("string");
 
-        byte[] tlvs = TlvMapper.mapToTlv(flatObject);
+        byte[] tlvs = TlvMapper.mapToTlv(flatObject, DefaultTlvValueMapper.getInstance());
+
+        System.out.println(HexBin.encode(tlvs));
 
     }
 
