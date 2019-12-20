@@ -1,4 +1,4 @@
-package o.horbenko.tlv;
+package o.horbenko.tlv.l;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 @Slf4j
 public class TlvLengthMapper {
 
-    static byte[] encodeTlvLength(int valueLength) {
+    public static byte[] encodeTlvLength(int valueLength) {
 
         if (valueLength < 0) {
             throw new IllegalArgumentException("L must be greater than zero!");

@@ -1,11 +1,12 @@
 package o.horbenko.tlv;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
+import o.horbenko.tlv.l.TlvLengthMapper;
+import o.horbenko.tlv.t.TlvTagMapper;
+import o.horbenko.tlv.v.DefaultTlvValueMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
 public class TlvMapper {
@@ -60,6 +61,12 @@ public class TlvMapper {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    public static <T>
+    T fromTlv(byte[] tlv, Class<T> outClass) {
+
+        throw new UnsupportedOperationException();
     }
 
     private static <T extends List>
