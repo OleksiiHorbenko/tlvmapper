@@ -40,7 +40,7 @@ public class TlvMapper {
 
                     byte[] V;
                     if (isJavaList(fieldType)) {
-                        V = mapListToTlv(field, (List) fieldValue, tlvValueMapper);
+                        V = mapListToTlv((List) fieldValue, tlvValueMapper);
                     } else {
                         V = tlvValueMapper.encodeTlvValue(fieldValue, fieldType);
                     }
@@ -63,22 +63,13 @@ public class TlvMapper {
     }
 
     private static <T extends List>
-    byte[] mapListToTlv(Field field,
-                        T fieldValue, TlvValueMapper mapper) throws IOException {
+    byte[] mapListToTlv(T fieldListValue, TlvValueMapper mapper) throws IOException {
 
-        ParameterizedType collectionType = (ParameterizedType) field.getGenericType();
-        Class<?> genericType = (Class<?>) collectionType.getActualTypeArguments()[0];
-        System.out.println("\t\t --- generic type=" + genericType);
-
-        List<?> input = fieldValue;
         ByteArrayOutputStream resultBuf = new ByteArrayOutputStream();
 
-        for (Object obj : input) {
-            System.out.println(" --- " + obj);
-            byte[] toAdd = mapToTlv(obj, mapper);
-            System.out.println("\t\t\t" + HexBin.encode(toAdd));
-            resultBuf.write(toAdd);
-
+        for (Object obj : fieldListValue) {
+            byte[] objectTlv = mapToTlv(obj, mapper);
+            resultBuf.write(objectTlv);
         }
 
         return resultBuf.toByteArray();

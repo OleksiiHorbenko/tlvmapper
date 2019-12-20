@@ -15,8 +15,6 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
     public
     byte[] encodeTlvValue(Object t, Class<?> inType) {
 
-        System.out.println("~~inType=" + inType);
-
         if (inType.isAssignableFrom(String.class))
             return toBytes((String) t);
 
