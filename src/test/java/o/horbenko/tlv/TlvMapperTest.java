@@ -17,8 +17,8 @@ public class TlvMapperTest {
         @TlvAttribute(tag = 3)
         private Short shortPrimitive = 3;
 
-//        @TlvAttribute(tag = 4)
-        private List<String> stringList = new ArrayList<>();
+        @TlvAttribute(tag = 4)
+        private List<String> stringList = new ArrayList();
 
         @TlvAttribute(tag = 5)
         private byte[] byteArray= new byte[]{0x71, 0x72, 0x73};
@@ -33,6 +33,10 @@ public class TlvMapperTest {
             return this;
         }
 
+        public FlatObject() {
+            this.stringList.add("FIRST");
+            this.stringList.add("SECOND");
+        }
 
         public Integer getInteger() {
             return integer;
@@ -88,7 +92,7 @@ public class TlvMapperTest {
                 .shortPrimitive((short) 111)
                 .string("string");
 
-        byte[] tlvs = TlvMapper.mapToTlv(flatObject, DefaultTlvValueMapper.getInstance());
+        byte[] tlvs = TlvMapper.mapToTlv(flatObject);
 
         System.out.println(HexBin.encode(tlvs));
 

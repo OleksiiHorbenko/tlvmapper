@@ -1,26 +1,34 @@
 package o.horbenko.tlv;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.Collection;
+import java.util.List;
 
 public class TlvMapper {
 
+    public static byte[] mapToTlv(Object toMap) {
+        return mapToTlv(toMap, DefaultTlvValueMapper.getInstance());
+    }
 
     // todo
     public static <T>
-    byte[] mapToTlv(T toMap, TlvValueMapper mapper) {
+    byte[] mapToTlv(T toMap, TlvValueMapper tlvValueMapper) {
         try {
 
-            ByteArrayOutputStream resultBytes = new ByteArrayOutputStream();
+            if (!tlvValueMapper.isFieldsContainer(toMap.getClass())) {
+                return tlvValueMapper.encodeTlvValue(toMap, toMap.getClass());
+            }
 
             Class<?> objectClass = toMap.getClass();
             Field[] classFields = objectClass.getDeclaredFields();
 
-            for (Field field : classFields) {
+            ByteArrayOutputStream resultBytes = new ByteArrayOutputStream();
 
+            for (Field field : classFields) {
                 if (field.isAnnotationPresent(TlvAttribute.class)) {
                     TlvAttribute anno = field.getAnnotation(TlvAttribute.class);
                     field.setAccessible(true);
@@ -30,19 +38,19 @@ public class TlvMapper {
 
                     System.out.println("\ttype=" + fieldType + "\tvalue=" + fieldValue + "\tanno=" + anno);
 
-                    byte[] V = mapper.toBytes(fieldValue, fieldType);
+                    byte[] V;
+                    if (isJavaList(fieldType)) {
+                        V = mapListToTlv(field, (List) fieldValue, tlvValueMapper);
+                    } else {
+                        V = tlvValueMapper.encodeTlvValue(fieldValue, fieldType);
+                    }
+
                     byte[] L = TlvLengthMapper.encodeTlvLength(V.length);
-                    byte[] T = TlvTagMapper.encode(anno.tag());
+                    byte[] T = TlvTagMapper.encodeTlvTag(anno.tag());
 
                     resultBytes.write(T);
                     resultBytes.write(L);
                     resultBytes.write(V);
-
-                    if (isCollectionChild(fieldType)) {
-                        ParameterizedType collectionType = (ParameterizedType) field.getGenericType();
-                        Class<?> genericType = (Class<?>) collectionType.getActualTypeArguments()[0];
-                        System.out.println("\t\t --- generic type=" + genericType);
-                    }
                 }
             }
 
@@ -54,9 +62,31 @@ public class TlvMapper {
         }
     }
 
+    private static <T extends List>
+    byte[] mapListToTlv(Field field,
+                        T fieldValue, TlvValueMapper mapper) throws IOException {
 
-    private static boolean isCollectionChild(Class<?> fieldType) {
-        return Collection.class.isAssignableFrom(fieldType);
+        ParameterizedType collectionType = (ParameterizedType) field.getGenericType();
+        Class<?> genericType = (Class<?>) collectionType.getActualTypeArguments()[0];
+        System.out.println("\t\t --- generic type=" + genericType);
+
+        List<?> input = fieldValue;
+        ByteArrayOutputStream resultBuf = new ByteArrayOutputStream();
+
+        for (Object obj : input) {
+            System.out.println(" --- " + obj);
+            byte[] toAdd = mapToTlv(obj, mapper);
+            System.out.println("\t\t\t" + HexBin.encode(toAdd));
+            resultBuf.write(toAdd);
+
+        }
+
+        return resultBuf.toByteArray();
+    }
+
+
+    private static boolean isJavaList(Class<?> fieldType) {
+        return List.class.isAssignableFrom(fieldType);
     }
 
 }

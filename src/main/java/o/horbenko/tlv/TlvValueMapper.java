@@ -2,8 +2,10 @@ package o.horbenko.tlv;
 
 public interface TlvValueMapper {
 
-    <T> byte[] toBytes(Object t, Class<?> inType);
+    byte[] encodeTlvValue(Object t, Class<?> inType);
 
     <T> T toObject(byte[] from, Class<T> outType);
+
+    boolean isFieldsContainer(Class<?> clazz);
 
 }

@@ -12,8 +12,10 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
     }
 
     @Override
-    public <T>
-    byte[] toBytes(Object t, Class<?> inType) {
+    public
+    byte[] encodeTlvValue(Object t, Class<?> inType) {
+
+        System.out.println("~~inType=" + inType);
 
         if (inType.isAssignableFrom(String.class))
             return toBytes((String) t);
@@ -52,6 +54,20 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
             return (T) toLong(from);
 
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isFieldsContainer(Class<?> clazz) {
+        if (clazz.isAssignableFrom(String.class)
+                || clazz.isAssignableFrom(Short.TYPE)
+                || clazz.isAssignableFrom(Integer.TYPE)
+                || clazz.isAssignableFrom(Long.TYPE)
+                || clazz == byte[].class
+        )
+            return false;
+        else
+            return true;
+
     }
 
 
