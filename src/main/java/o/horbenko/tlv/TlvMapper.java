@@ -73,18 +73,21 @@ public class TlvMapper {
     public static <T>
     T parseTlv(byte[] tlv,
                Class<T> outClass) {
-        return parseTlv(tlv, outClass, DefaultTlvValueMapper.getInstance());
+        return parseTlv(
+                tlv, 0, tlv.length,
+                outClass,
+                DefaultTlvValueMapper.getInstance());
 
     }
 
     public static <T>
-    T parseTlv(byte[] tlv,
+    T parseTlv(byte[] tlv, int tlvStartOffset, int tlvEndOffset,
                Class<T> outClass,
                TlvValueMapper tlvValueMapper) {
         try {
 
             if (!tlvValueMapper.isFieldsContainer(outClass)) {
-                TLV singleTlv = parseTlv(tlv, 0);
+                TLV singleTlv = parseTlv(tlv, tlvStartOffset);
                 return tlvValueMapper.toObject(
                         tlv, singleTlv.getValueStartOffset(), singleTlv.getValueEndOffset(),
                         outClass);
@@ -93,9 +96,7 @@ public class TlvMapper {
             Field[] classFields = outClass.getDeclaredFields();
             T resultInstance = outClass.getConstructor().newInstance();
 
-            Map<Short, TLV> rootLevelTlvMap = parseTlvLevel(tlv, 0, tlv.length);
-
-//            rootLevelTlvMap.forEach((aShort, tlv1) -> System.out.println(" ++++ tag=" + aShort + " value=" + tlv1));
+            Map<Short, TLV> rootLevelTlvMap = parseTlvLevel(tlv, tlvStartOffset, tlvEndOffset);
 
             // iterate over all result type fields
             for (Field field : classFields) {
@@ -112,11 +113,23 @@ public class TlvMapper {
                         // get class to map into
                         Class<?> fieldType = field.getType();
 
-                        // map TLV value to field Class
-                        Object val = tlvValueMapper.toObject(
-                                fieldTlv.getValue(),
-                                fieldTlv.getValueStartOffset(), fieldTlv.getValueEndOffset(),
-                                fieldType);
+                        Object val;
+                        if (tlvValueMapper.isFieldsContainer(fieldType)) {
+                            System.out.println(" FOUND INNER CLASS TO MAP. fieldType to map=" + fieldType);
+                            val = parseTlv(
+                                    fieldTlv.getValue(),
+                                    fieldTlv.getValueStartOffset(),
+                                    fieldTlv.getValueEndOffset(),
+                                    fieldType,
+                                    tlvValueMapper);
+                        } else {
+
+                            // map TLV value to field Class
+                            val = tlvValueMapper.toObject(
+                                    fieldTlv.getValue(),
+                                    fieldTlv.getValueStartOffset(), fieldTlv.getValueEndOffset(),
+                                    fieldType);
+                        }
 
                         // set value from TLV into result object
                         field.setAccessible(true);

@@ -18,11 +18,12 @@ public class TlvParserTest {
 
         // ARRANGE
         byte[] input = HexBin.decode(
-                "0378" + "04" + "000004D2" +            // intF
+                "0378" + "04" + "000004D2" +                // intF
                         "0309" + "11" + "48656C6C6F20544C562070617273657221" + //stringF
-                        "0001" + "02" + "0003" +                // shortF
-                        "0002" + "08" + "0000000000000004" +    // longF
-                        "03E7" + "02" + "0708"                  // ByteArrayValue
+                        "0001" + "02" + "0003" +                    // shortF
+                        "0002" + "08" + "0000000000000004" +        // longF
+                        "03E7" + "02" + "0708" +                    // ByteArrayValue
+                        "0003" + "07" + "0004" + "04" + "00000004"    // level2
         );
 
         Level1 expected = Level1.builder()
@@ -35,9 +36,9 @@ public class TlvParserTest {
                         .byteArrayStartOffset(46)
                         .byteArrayEndOffset(48)
                         .build())
-//                .level2(Level2.builder()
-//                        .level2int(9)
-//                        .build())
+                .level2(Level2.builder()
+                        .level2int(4)
+                        .build())
                 .build();
 
 
@@ -84,7 +85,7 @@ public class TlvParserTest {
     @AllArgsConstructor
     static class Level2 {
 
-        @TlvAttribute(tag = 55)
+        @TlvAttribute(tag = 4)
         private Integer level2int;
 
     }

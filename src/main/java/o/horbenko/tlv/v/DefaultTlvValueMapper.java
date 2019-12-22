@@ -83,9 +83,9 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
     @Override
     public boolean isFieldsContainer(Class<?> clazz) {
         if (clazz.isAssignableFrom(String.class)
-                || clazz.isAssignableFrom(Short.TYPE)
-                || clazz.isAssignableFrom(Integer.TYPE)
-                || clazz.isAssignableFrom(Long.TYPE)
+                || clazz.isAssignableFrom(Short.class)
+                || clazz.isAssignableFrom(Integer.class)
+                || clazz.isAssignableFrom(Long.class)
                 || clazz == byte[].class
                 || clazz == ByteArrayValue.class
         )
