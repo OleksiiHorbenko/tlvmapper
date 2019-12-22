@@ -1,9 +1,5 @@
 package o.horbenko.tlv;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import o.horbenko.tlv.l.TlvLengthMapper;
 import o.horbenko.tlv.t.TlvTagMapper;
 import o.horbenko.tlv.v.DefaultTlvValueMapper;
@@ -14,7 +10,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 public class TlvMapper {
 
@@ -22,7 +17,6 @@ public class TlvMapper {
         return mapToTlv(toMap, DefaultTlvValueMapper.getInstance());
     }
 
-    // todo
     public static <T>
     byte[] mapToTlv(T toMap, TlvValueMapper tlvValueMapper) {
         try {
@@ -43,8 +37,6 @@ public class TlvMapper {
                     Class<?> fieldType = field.getType();
                     Object fieldValue = field.get(toMap);
 
-                    System.out.println("\ttype=" + fieldType + "\tvalue=" + fieldValue + "\tanno=" + anno);
-
                     byte[] V;
                     if (isJavaList(fieldType)) {
                         V = mapListToTlv((List) fieldValue, tlvValueMapper);
@@ -64,7 +56,6 @@ public class TlvMapper {
             return resultBytes.toByteArray();
 
         } catch (IllegalAccessException | IOException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -73,11 +64,11 @@ public class TlvMapper {
     public static <T>
     T parseTlv(byte[] tlv,
                Class<T> outClass) {
+
         return parseTlv(
                 tlv, 0, tlv.length,
                 outClass,
                 DefaultTlvValueMapper.getInstance());
-
     }
 
     public static <T>
@@ -115,7 +106,6 @@ public class TlvMapper {
 
                         Object val;
                         if (tlvValueMapper.isFieldsContainer(fieldType)) {
-                            System.out.println(" FOUND INNER CLASS TO MAP. fieldType to map=" + fieldType);
                             val = parseTlv(
                                     fieldTlv.getValue(),
                                     fieldTlv.getValueStartOffset(),
@@ -142,7 +132,6 @@ public class TlvMapper {
             return resultInstance;
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
