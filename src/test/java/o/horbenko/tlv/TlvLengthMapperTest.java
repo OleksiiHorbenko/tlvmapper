@@ -19,10 +19,9 @@ public class TlvLengthMapperTest {
         byte[] tlvShort = TlvLengthMapper.encodeTlvLength(inputShort);
         byte[] tlvInt = TlvLengthMapper.encodeTlvLength(inputInt);
 
-
-        int resultByte = TlvLengthMapper.decodeTlvLength(tlvByte, -1);
-        int resultShort = TlvLengthMapper.decodeTlvLength(tlvShort, -1);
-        int resultInt = TlvLengthMapper.decodeTlvLength(tlvInt, -1);
+        int resultByte = TlvLengthMapper.decodeTlvLength(tlvByte, 0);
+        int resultShort = TlvLengthMapper.decodeTlvLength(tlvShort, 0);
+        int resultInt = TlvLengthMapper.decodeTlvLength(tlvInt, 0);
 
 //        ASSERT
         Assert.assertEquals(tlvByte.length, Byte.BYTES);
@@ -40,7 +39,7 @@ public class TlvLengthMapperTest {
         int length = (short) 777;
 
         byte[] encodedL = TlvLengthMapper.encodeTlvLength(length);
-        int reconstructedL = TlvLengthMapper.decodeTlvLength(encodedL, -1);
+        int reconstructedL = TlvLengthMapper.decodeTlvLength(encodedL, 0);
 
         Assert.assertEquals(length, reconstructedL);
     }
@@ -53,7 +52,7 @@ public class TlvLengthMapperTest {
 
         // ACT
         byte[] encodedL = TlvLengthMapper.encodeTlvLength(length);
-        int reconstructedL = TlvLengthMapper.decodeTlvLength(encodedL, -1);
+        int reconstructedL = TlvLengthMapper.decodeTlvLength(encodedL, 0);
 
         // ASSERT
         Assert.assertEquals(length, reconstructedL);

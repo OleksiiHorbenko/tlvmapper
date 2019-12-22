@@ -4,7 +4,9 @@ public interface TlvValueMapper {
 
     byte[] encodeTlvValue(Object t, Class<?> inType);
 
-    <T> T toObject(byte[] from, Class<T> outType);
+    <T> T toObject(byte[] tlv,
+                    int valueStartOffset, int valueEndOffset,
+                    Class<T> outType);
 
     boolean isFieldsContainer(Class<?> clazz);
 

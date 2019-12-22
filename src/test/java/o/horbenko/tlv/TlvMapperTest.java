@@ -1,6 +1,7 @@
 package o.horbenko.tlv;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,12 +39,22 @@ public class TlvMapperTest {
 
     @Test
     public void flatTest_success() {
-        System.out.println("hello test");
-        Level1 flatObject = new Level1();
 
-        byte[] tlvs = TlvMapper.mapToTlv(flatObject);
+        // ARRANGLE
+        Level1 root = new Level1();
+        byte[] expected = HexBin.decode(
+                "00010400000001" +
+                        "00020132" +
+                        "0003020003" +
+                        "00040A" + "000B02000B" + "000B02000B" +
+                        "000503717273"
+        );
 
-        System.out.println(HexBin.encode(tlvs));
+        // ACT
+        byte[] actual = TlvMapper.mapToTlv(root);
+
+        // ASSERT
+        Assert.assertArrayEquals(expected, actual);
 
     }
 

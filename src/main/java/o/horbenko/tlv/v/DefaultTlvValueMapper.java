@@ -1,9 +1,11 @@
 package o.horbenko.tlv.v;
 
+import o.horbenko.tlv.ByteArrayValue;
 import o.horbenko.tlv.TlvValueMapper;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class DefaultTlvValueMapper implements TlvValueMapper {
 
@@ -23,8 +25,7 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
         if (t instanceof Short)
             return toBytes((short) t);
 
-//        if (inType.isAssignableFrom(Integer.class))
-        if (t instanceof Integer)
+        if (inType.isAssignableFrom(Integer.class))
             return toBytes((Integer) t);
 
         if (inType.isAssignableFrom(Long.TYPE))
@@ -38,23 +39,46 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
     }
 
     @Override
-    public <T>
-    T toObject(byte[] from, Class<T> mapInto) {
+    public <T> T toObject(byte[] V, int valueStartOffset, int valueEndOffset, Class<T> outType) {
 
-        if (mapInto.isAssignableFrom(String.class))
-            return (T) toString(from);
+        if (outType.isAssignableFrom(String.class))
+            return (T) toString(V, valueStartOffset, valueEndOffset);
 
-        if (mapInto.isAssignableFrom(Short.TYPE))
-            return (T) toShort(from);
+        if (outType.isAssignableFrom(Short.class)) {
+            if (valueEndOffset - valueStartOffset != 2)
+                throw new IllegalArgumentException();
+            return (T) toShort(V, valueStartOffset);
+        }
 
-        if (mapInto.isAssignableFrom(Integer.TYPE))
-            return (T) toInt(from);
+        if (outType.isAssignableFrom(Integer.class)) {
+            if (valueEndOffset - valueStartOffset != 4)
+                throw new IllegalArgumentException();
+            return (T) toInt(V, valueStartOffset);
+        }
 
-        if (mapInto.isAssignableFrom(Long.TYPE))
-            return (T) toLong(from);
+        if(outType.isAssignableFrom(Long.class)) {
+            if (valueEndOffset - valueStartOffset != 8)
+                throw new IllegalArgumentException();
+            return (T) toLong(V, valueStartOffset);
+        }
 
-        throw new UnsupportedOperationException();
+        if (outType == byte[].class) {
+            return (T) Arrays.copyOfRange(V, valueStartOffset, valueEndOffset);
+        }
+
+        if (outType.isAssignableFrom(ByteArrayValue.class)) {
+            return (T) ByteArrayValue.builder()
+                    .valueHolder(V)
+                    .byteArrayStartOffset(valueStartOffset)
+                    .byteArrayEndOffset(valueEndOffset)
+                    .build();
+        }
+
+
+        throw new IllegalArgumentException();
     }
+
+
 
     @Override
     public boolean isFieldsContainer(Class<?> clazz) {
@@ -63,6 +87,7 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
                 || clazz.isAssignableFrom(Integer.TYPE)
                 || clazz.isAssignableFrom(Long.TYPE)
                 || clazz == byte[].class
+                || clazz == ByteArrayValue.class
         )
             return false;
         else
@@ -71,36 +96,48 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
     }
 
 
-    private static byte[] toBytes(short val) {
+    public static byte[] toBytes(short val) {
         return ByteBuffer.allocate(Short.BYTES).putShort(val).array();
     }
 
-    private static byte[] toBytes(int val) {
+    public static byte[] toBytes(int val) {
         return ByteBuffer.allocate(Integer.BYTES).putInt(val).array();
     }
 
-    private static byte[] toBytes(long val) {
+    public static byte[] toBytes(long val) {
         return ByteBuffer.allocateDirect(Long.BYTES).putLong(val).array();
     }
 
-    private static byte[] toBytes(String val) {
+    public static byte[] toBytes(String val) {
         return val.getBytes(StandardCharsets.UTF_8);
     }
 
-    private static Short toShort(byte[] bytes) {
-        return ByteBuffer.allocateDirect(Short.BYTES).put(bytes).rewind().getShort();
+    public static Short toShort(byte[] bytes) {
+        return toShort(bytes, 0);
     }
 
-    private static Integer toInt(byte[] bytes) {
-        return ByteBuffer.allocateDirect(Integer.BYTES).put(bytes).rewind().getInt();
+    public static Short toShort(byte[] bytes, int startOffset) {
+        return ByteBuffer.allocateDirect(Short.BYTES).put(bytes, startOffset, Short.BYTES).rewind().getShort();
     }
 
-    private static Long toLong(byte[] bytes) {
-        return ByteBuffer.allocateDirect(Long.BYTES).put(bytes).rewind().getLong();
+    public static Integer toInt(byte[] bytes, int offset) {
+        return ByteBuffer
+                .allocate(Integer.BYTES)
+                .put(bytes, offset, Integer.BYTES)
+                .rewind()
+                .getInt();
     }
 
-    private static String toString(byte[] bytes) {
-        return new String(bytes, StandardCharsets.UTF_8);
+    public static Long toLong(byte[] bytes, int offset) {
+        return ByteBuffer
+                .allocateDirect(Long.BYTES)
+                .put(bytes, offset, Long.BYTES)
+                .rewind()
+                .getLong();
+    }
+
+    public static String toString(byte[] bytes, int startOffset, int endOffset) {
+        return new String(bytes, startOffset, endOffset - startOffset, StandardCharsets.UTF_8);
     }
 
 }

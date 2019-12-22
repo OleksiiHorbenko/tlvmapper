@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
  * If the Value field contains more than 127 bytes, bit 7 of the Length field is one (1)
  * and the remaining bits identify the number of bytes needed to contain the length.
  */
-@Slf4j
 public class TlvLengthMapper {
 
     public static byte[] encodeTlvLength(int valueLength) {
@@ -51,9 +50,9 @@ public class TlvLengthMapper {
     }
 
 
-    public static int decodeTlvLength(byte[] toParse, int tagOffset) {
+    public static int decodeTlvLength(byte[] toParse, int lengthFirstByteOffset) {
 
-        int lengthFirstByteOffset = tagOffset + 1;
+//        int lengthFirstByteOffset = tagOffset + 1;
         byte first = toParse[lengthFirstByteOffset];
 
         // is Value Length 0 <= Value Length <= 127 ?
@@ -71,11 +70,11 @@ public class TlvLengthMapper {
         }
     }
 
-    public static int getFullEncodedTlvLength(int length) {
-        if (length <= Byte.MAX_VALUE)
+    public static int getFullEncodedTlvLength(int lengthOfValue) {
+        if (lengthOfValue <= Byte.MAX_VALUE)
             return 1;
         else
-            return 1 + getLengthBytesCount(length);
+            return 1 + getLengthBytesCount(lengthOfValue);
     }
 
     private static boolean isFirstBitIsZero(byte toTest) {
