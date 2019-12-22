@@ -104,6 +104,7 @@ public class TlvMapper {
 
                         // set value from TLV into result object
                         boolean prevAccessibleFlagState = field.isAccessible();
+//                        boolean prevAccessibleFlagState = field.canAccess(resultInstance); since Java 9
                         field.setAccessible(true);
                         field.set(resultInstance, val);
                         field.setAccessible(prevAccessibleFlagState);
