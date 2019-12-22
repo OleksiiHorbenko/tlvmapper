@@ -37,13 +37,7 @@ public class TlvMapper {
                     Class<?> fieldType = field.getType();
                     Object fieldValue = field.get(toMap);
 
-                    byte[] V;
-                    if (isJavaList(fieldType)) {
-                        V = mapListToTlv((List) fieldValue, tlvValueMapper);
-                    } else {
-                        V = tlvValueMapper.encodeTlvValue(fieldValue, fieldType);
-                    }
-
+                    byte[] V = mapFieldToTlv(tlvValueMapper, fieldType, fieldValue);
                     byte[] L = TlvLengthMapper.encodeTlvLength(V.length);
                     byte[] T = TlvTagMapper.encodeTlvTag(anno.tag());
 
@@ -59,6 +53,7 @@ public class TlvMapper {
             throw new RuntimeException(e);
         }
     }
+
 
 
     public static <T>
@@ -104,22 +99,8 @@ public class TlvMapper {
                         // get class to map into
                         Class<?> fieldType = field.getType();
 
-                        Object val;
-                        if (tlvValueMapper.isFieldsContainer(fieldType)) {
-                            val = parseTlv(
-                                    fieldTlv.getValue(),
-                                    fieldTlv.getValueStartOffset(),
-                                    fieldTlv.getValueEndOffset(),
-                                    fieldType,
-                                    tlvValueMapper);
-                        } else {
-
-                            // map TLV value to field Class
-                            val = tlvValueMapper.toObject(
-                                    fieldTlv.getValue(),
-                                    fieldTlv.getValueStartOffset(), fieldTlv.getValueEndOffset(),
-                                    fieldType);
-                        }
+                        // parse and cast object (RECURSION UNDER THE HOOD!)
+                        Object val = parseFieldObject(tlvValueMapper, fieldTlv, fieldType);
 
                         // set value from TLV into result object
                         field.setAccessible(true);
@@ -134,6 +115,46 @@ public class TlvMapper {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static byte[] mapFieldToTlv(TlvValueMapper tlvValueMapper,
+                                        Class<?> fieldType,
+                                        Object fieldValue) throws IOException {
+        byte[] V;
+
+        if (isJavaList(fieldType)) {
+            V = mapListToTlv((List) fieldValue, tlvValueMapper);
+        } else {
+            V = tlvValueMapper.encodeTlvValue(fieldValue, fieldType);
+        }
+        return V;
+    }
+
+
+    private static Object parseFieldObject(TlvValueMapper tlvValueMapper,
+                                           TLV fieldTlv,
+                                           Class<?> fieldType) {
+        Object val;
+
+        if (tlvValueMapper.isFieldsContainer(fieldType)) {
+
+            // inner Object that (maybe) contains inner attributes
+            val = parseTlv(
+                    fieldTlv.getValue(),
+                    fieldTlv.getValueStartOffset(),
+                    fieldTlv.getValueEndOffset(),
+                    fieldType,
+                    tlvValueMapper);
+        } else {
+
+            // map TLV value to field Class
+            val = tlvValueMapper.toObject(
+                    fieldTlv.getValue(),
+                    fieldTlv.getValueStartOffset(), fieldTlv.getValueEndOffset(),
+                    fieldType);
+        }
+
+        return val;
     }
 
     private static Map<Short, TLV> parseTlvLevel(byte[] tlvBytes, int startOffset, int endOffset) {
