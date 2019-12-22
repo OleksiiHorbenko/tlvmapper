@@ -93,26 +93,32 @@ public class TlvMapper {
             Field[] classFields = outClass.getDeclaredFields();
             T resultInstance = outClass.getConstructor().newInstance();
 
-            Map<Short, TLV> rootLevelTlvMap = parseTlvLevel(tlv, 0);
+            Map<Short, TLV> rootLevelTlvMap = parseTlvLevel(tlv, 0, tlv.length);
 
 //            rootLevelTlvMap.forEach((aShort, tlv1) -> System.out.println(" ++++ tag=" + aShort + " value=" + tlv1));
 
+            // iterate over all result type fields
             for (Field field : classFields) {
                 if (field.isAnnotationPresent(TlvAttribute.class)) {
                     TlvAttribute anno = field.getAnnotation(TlvAttribute.class);
                     short tagToSearchBy = anno.tag();
 
+                    // if TLV by tag from object field was found in input
                     if (rootLevelTlvMap.containsKey(tagToSearchBy)) {
 
+                        // get TLV field
                         TLV fieldTlv = rootLevelTlvMap.get(tagToSearchBy);
 
+                        // get class to map into
                         Class<?> fieldType = field.getType();
 
+                        // map TLV value to field Class
                         Object val = tlvValueMapper.toObject(
                                 fieldTlv.getValue(),
                                 fieldTlv.getValueStartOffset(), fieldTlv.getValueEndOffset(),
                                 fieldType);
 
+                        // set value from TLV into result object
                         field.setAccessible(true);
                         field.set(resultInstance, val);
                         field.setAccessible(false);
@@ -128,12 +134,12 @@ public class TlvMapper {
         }
     }
 
-    private static Map<Short, TLV> parseTlvLevel(byte[] tlvBytes, int startOffset) {
+    private static Map<Short, TLV> parseTlvLevel(byte[] tlvBytes, int startOffset, int endOffset) {
         Map<Short, TLV> result = new HashMap<>();
 
         int tlvStartOffset = startOffset;
 
-        while (tlvStartOffset < tlvBytes.length) {
+        while (tlvStartOffset < endOffset) {
             TLV tlv = parseTlv(tlvBytes, tlvStartOffset);
             result.put(tlv.getTag(), tlv);
             tlvStartOffset += tlv.getTlvSize();
