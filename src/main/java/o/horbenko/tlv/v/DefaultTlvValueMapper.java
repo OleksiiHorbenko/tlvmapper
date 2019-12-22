@@ -81,7 +81,7 @@ public class DefaultTlvValueMapper implements TlvValueMapper {
 
 
     @Override
-    public boolean isFieldsContainer(Class<?> clazz) {
+    public boolean isInnerTlvAttributesContainer(Class<?> clazz) {
         if (clazz.isAssignableFrom(String.class)
                 || clazz.isAssignableFrom(Short.class)
                 || clazz.isAssignableFrom(Integer.class)

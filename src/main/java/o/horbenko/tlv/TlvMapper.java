@@ -21,7 +21,7 @@ public class TlvMapper {
     byte[] mapToTlv(T toMap, TlvValueMapper tlvValueMapper) {
         try {
 
-            if (!tlvValueMapper.isFieldsContainer(toMap.getClass())) {
+            if (!tlvValueMapper.isInnerTlvAttributesContainer(toMap.getClass())) {
                 return tlvValueMapper.encodeTlvValue(toMap, toMap.getClass());
             }
 
@@ -72,7 +72,7 @@ public class TlvMapper {
                TlvValueMapper tlvValueMapper) {
         try {
 
-            if (!tlvValueMapper.isFieldsContainer(outClass)) {
+            if (!tlvValueMapper.isInnerTlvAttributesContainer(outClass)) {
                 TLV singleTlv = parseTlv(tlv, tlvStartOffset);
                 return tlvValueMapper.toObject(
                         tlv, singleTlv.getValueStartOffset(), singleTlv.getValueEndOffset(),
@@ -103,9 +103,10 @@ public class TlvMapper {
                         Object val = parseFieldObject(tlvValueMapper, fieldTlv, fieldType);
 
                         // set value from TLV into result object
+                        boolean prevAccessibleFlagState = field.isAccessible();
                         field.setAccessible(true);
                         field.set(resultInstance, val);
-                        field.setAccessible(false);
+                        field.setAccessible(prevAccessibleFlagState);
                     }
                 }
             }
@@ -136,7 +137,7 @@ public class TlvMapper {
                                            Class<?> fieldType) {
         Object val;
 
-        if (tlvValueMapper.isFieldsContainer(fieldType)) {
+        if (tlvValueMapper.isInnerTlvAttributesContainer(fieldType)) {
 
             // inner Object that (maybe) contains inner attributes
             val = parseTlv(

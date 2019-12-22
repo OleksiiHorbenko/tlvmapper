@@ -8,6 +8,6 @@ public interface TlvValueMapper {
                     int valueStartOffset, int valueEndOffset,
                     Class<T> outType);
 
-    boolean isFieldsContainer(Class<?> clazz);
+    boolean isInnerTlvAttributesContainer(Class<?> clazz);
 
 }

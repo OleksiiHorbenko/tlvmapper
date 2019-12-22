@@ -2,8 +2,6 @@ package o.horbenko.tlv.t;
 
 import o.horbenko.tlv.v.DefaultTlvValueMapper;
 
-import java.nio.ByteBuffer;
-
 public class TlvTagMapper {
 
     public static byte[] encodeTlvTag(short tag) {
